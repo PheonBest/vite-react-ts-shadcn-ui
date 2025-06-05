@@ -27,6 +27,7 @@
 [tailwind-intellisense]: https://marketplace.visualstudio.com/items?itemName=bradlc.vscode-tailwindcss
 [betterer]: https://marketplace.visualstudio.com/items?itemName=Betterer.betterer-vscode
 [devbox]: https://www.jetify.com/docs/devbox/
+
 ---
 
 ## :bookmark: Table of contents
