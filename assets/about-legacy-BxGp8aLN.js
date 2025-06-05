@@ -1,0 +1,1 @@
+System.register(["./index-legacy-D338Ohy_.js"],(function(e,t){"use strict";var n;return{setters:[e=>{n=e.j}],execute:function(){e("component",(function(){return n.jsx("div",{className:"page-content p-2",children:"Hello from About!"})}))}}}));
