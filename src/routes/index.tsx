@@ -13,14 +13,31 @@ export const Route = createFileRoute('/')({
 });
 
 export default function Index() {
-  const [name, setName] = useState<string | undefined>();
-  const [movies, setMovies] = useState<MovieDTO[] | undefined>();
+  // In dev environment, dynamic values are fetched from mocked APIs
+  // In prod environment, default values are used
+  const [nameLoading, setNameLoading] = useState(true);
+  const [name, setName] = useState<string>('<user>');
+  const [moviesLoading, setMoviesLoading] = useState(true);
+  const [movies, setMovies] = useState<MovieDTO[]>([
+    {
+      title: 'The Lord of The Rings'
+    },
+    {
+      title: 'The Matrix'
+    },
+    {
+      title: 'Star Wars: Empire Strikes Back'
+    }
+  ]);
 
   useEffect(() => {
     void fetch('/api/user')
       .then((response) => response.json())
       .then((data) => {
         setName((data as UserDTO).firstName + ' ' + (data as UserDTO).lastName);
+      })
+      .finally(() => {
+        setNameLoading(false);
       });
   }, []);
 
@@ -45,10 +62,11 @@ export default function Index() {
         const typedData = data as { data: { movies: MovieDTO[] } };
         const movies = typedData.data.movies;
         setMovies([...movies]);
+      })
+      .finally(() => {
+        setMoviesLoading(false);
       });
   }, []);
-
-  if (!name) return <p>Loading...</p>;
 
   return (
     <div className='page-content flex flex-col gap-6 pt-12'>
@@ -78,15 +96,19 @@ export default function Index() {
         </h1>
         <Card className='w-full p-4'>
           <CardContent className='hero-card-content'>
-            {name ? (
+            {nameLoading ? (
+              <Skeleton className='h-8 w-48' />
+            ) : (
               <h1 data-testid='greeting' className='raleway3'>
                 Hello, <span className='italic opacity-75'>{name}</span> !
               </h1>
-            ) : (
-              <Skeleton className='h-8 w-48' />
             )}
 
-            {movies ? (
+            {moviesLoading ? (
+              <div className='flex items-center justify-center'>
+                <Skeleton className='h-8 w-48' />
+              </div>
+            ) : (
               <div className='flex flex-col items-start justify-center gap-2'>
                 <h2 className='raleway5'>Movies selected for you</h2>
                 <ul
@@ -102,10 +124,6 @@ export default function Index() {
                   ))}
                 </ul>
               </div>
-            ) : (
-              <div className='flex items-center justify-center'>
-                <Skeleton className='h-8 w-48' />
-              </div>
             )}
           </CardContent>
         </Card>
@@ -114,14 +132,14 @@ export default function Index() {
       <div className='hero-item'>
         <h1 className='hero-item-title'>
           Comes with pre-defined google & static fonts
-          <p className='hero-item-description'>
+          <div className='hero-item-description'>
             Class name formats are:
             <ul className='list-disc pl-4'>
               <li>.font-&lt;family-name&gt; and headings</li>
               <li>.&lt;family-name&gt;&lt;style-number&gt;</li>
             </ul>
             <span className='block'>* Example: .font-roboto, .roboto1, .roboto2, etc.</span>
-          </p>
+          </div>
         </h1>
         <Card className='w-full p-4'>
           <CardContent className='hero-card-content'>
