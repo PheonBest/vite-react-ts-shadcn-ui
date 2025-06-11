@@ -4,6 +4,7 @@ resource "aws_wafv2_web_acl" "this" {
   name        = "cloudfront-waf"
   description = "WAF for CloudFront serving S3 static website"
   scope       = "CLOUDFRONT" # Must be CLOUDFRONT for CloudFront distributions[6][8]
+  provider = aws.useast1
 
   default_action {
     allow {}
@@ -82,5 +83,11 @@ resource "aws_wafv2_web_acl" "this" {
     cloudwatch_metrics_enabled = true
     metric_name                = "cloudfront-waf"
     sampled_requests_enabled   = true
+  }
+
+  tags = {
+    Name        = "${var.env}-${var.project}"
+    Environment = var.env
+    Project     = var.project
   }
 }

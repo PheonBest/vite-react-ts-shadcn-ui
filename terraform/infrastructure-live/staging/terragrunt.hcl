@@ -14,6 +14,7 @@ locals {
 
 inputs = {
   env             = "staging"
+  enable_failover_s3 = false
   project         = "launchplate-react"
   html_source_dir = abspath("${local.root_dir}/../../web/dist/")
 }

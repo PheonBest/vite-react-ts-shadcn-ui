@@ -2,6 +2,8 @@
 
 locals {
   region = "eu-west-3"
+  # AWS WAF is available globally for CloudFront distributions, but you must use the Region US East (N. Virginia) to create your web ACL and any resources used in the web ACL, such as rule groups, IP sets, and regex pattern sets. Some interfaces offer a region choice of "Global (CloudFront)". Choosing this is identical to choosing Region US East (N. Virginia) or "us-east-1".
+  cloudflareWAFRegion = "us-east-1"
 }
 
 # Generate backend.tf, which references backend remote state
@@ -35,6 +37,10 @@ generate "provider" {
   contents = <<EOF
 provider "aws" {
     region="${local.region}"
+}
+provider "aws" {
+  alias  = "useast1"
+  region = "us-east-1"
 }
 EOF
 }

@@ -23,55 +23,64 @@ resource "aws_s3_bucket_policy" "static_website_bucket_policy" {
 
 # Setup cache with CloudFront distribution
 resource "aws_cloudfront_distribution" "this" {
-  origin_group {
-    origin_id = "groupS3"
 
-    failover_criteria {
-      status_codes = [403, 404, 500, 502]
-    }
+  dynamic "origin_group" {
+    for_each = var.enable_failover_s3 ? [1] : []
 
-    member {
-      origin_id = aws_s3_bucket.this.id
-    }
+    content {
+      origin_id = "groupS3"
 
-    member {
-      origin_id = "failoverS3"
+      failover_criteria {
+        status_codes = [403, 404, 500, 502]
+      }
+
+      member {
+        origin_id = "primaryS3"
+      }
+
+      member {
+        origin_id = "failoverS3"
+      }
     }
   }
 
   origin {
     domain_name = aws_s3_bucket.this.bucket_regional_domain_name
-    origin_id   = aws_s3_bucket.this.id
+    origin_id   = "primaryS3"
 
     s3_origin_config {
       origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
     }
   }
 
-  origin {
-    domain_name = aws_s3_bucket.failover.bucket_regional_domain_name
-    origin_id   = "failoverS3"
+  dynamic "origin" {
+    for_each = var.enable_failover_s3 ? [1] : []
 
-    s3_origin_config {
-      origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
+    content {
+      domain_name = aws_s3_bucket.failover["enabled"].bucket_regional_domain_name
+      origin_id   = "failoverS3"
+
+      s3_origin_config {
+        origin_access_identity = aws_cloudfront_origin_access_identity.this.cloudfront_access_identity_path
+      }
     }
   }
 
   enabled             = true
   is_ipv6_enabled     = true
-  web_acl_id          = aws_wafv2_web_acl.this.id
+  web_acl_id          = aws_wafv2_web_acl.this.arn
   default_root_object = var.index_document
 
   logging_config {
     include_cookies = false
-    bucket          = "mylogs.s3.amazonaws.com"
-    prefix          = "myprefix"
+    bucket          = aws_s3_bucket.log_bucket.bucket_domain_name
+    prefix          = "cloudfront/"
   }
 
   default_cache_behavior {
     allowed_methods  = ["GET", "HEAD"]
     cached_methods   = ["GET", "HEAD"]
-    target_origin_id = "groupS3"
+    target_origin_id = var.enable_failover_s3 ? "groupS3" : "primaryS3"
 
     forwarded_values {
       query_string = false
@@ -101,7 +110,9 @@ resource "aws_cloudfront_distribution" "this" {
   }
 
   tags = {
-    Environment = "production"
+    Name        = "${var.env}-${var.project}"
+    Environment = var.env
+    Project     = var.project
   }
 }
 

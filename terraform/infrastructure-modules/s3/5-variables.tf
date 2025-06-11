@@ -3,6 +3,11 @@ variable "aws_region" {
   type        = string
 }
 
+variable "enable_failover_s3" {
+  description = "If true, deploy a failover S3 bucket"
+  type        = bool
+}
+
 variable "env" {
   description = "Environment name"
   type        = string
