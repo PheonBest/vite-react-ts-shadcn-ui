@@ -18,7 +18,10 @@ export default function Footer() {
 
   return (
     <footer
-      className={cn(styles.footer, 'flex h-10 w-full items-center justify-center border-t text-sm')}
+      className={cn(
+        styles.footer,
+        'flex h-[50px] w-full items-center justify-center border-t text-sm'
+      )}
     >
       <div className='h-full w-full'>
         {/* Marketing */}
@@ -83,7 +86,7 @@ export default function Footer() {
               <div className='flex justify-end gap-4 text-xs text-gray-400'>
                 <div className='flex flex-col gap-2'>
                   {/* Frontend Version */}
-                  <p>APP v{import.meta.env.VITE_REACT_APP_VERSION}</p>
+                  <p>APP v{config.appVersion}</p>
 
                   {/* Backend Version */}
 

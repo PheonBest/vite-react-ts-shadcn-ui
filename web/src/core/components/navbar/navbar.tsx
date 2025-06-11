@@ -26,7 +26,7 @@ export default function Navbar() {
         'flex h-16 w-full items-center justify-between border-b px-5'
       )}
     >
-      <div className='flex items-center gap-2'>
+      <div className='flex items-center gap-3'>
         <p className='text-lg font-black'>Template</p>
         {/* Environment ( Not shown in production ) */}
         {config.mode === 'production' ? undefined : (

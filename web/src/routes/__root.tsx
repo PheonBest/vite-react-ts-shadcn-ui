@@ -28,7 +28,7 @@ function RootDocument({ children }: { children: JSX.Element }) {
       <Navbar />
 
       {/* This is where the child routes will be rendered */}
-      <div id='root' className='mt-20'>
+      <div id='root' className='mt-[-50px]'>
         {children}
         <TanStackRouterDevtools initialIsOpen={false} />
       </div>
