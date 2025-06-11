@@ -4,7 +4,7 @@
 /// <reference types="vitest" />
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { defineConfig } from 'vite';
+import { defineConfig, loadEnv } from 'vite';
 import react from '@vitejs/plugin-react-swc';
 import config from './_config';
 import { TanStackRouterVite } from '@tanstack/router-plugin/vite';
@@ -15,68 +15,53 @@ import legacy from '@vitejs/plugin-legacy';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import dotenv from 'dotenv';
-const env = process.env.NODE_ENV ?? 'development';
-switch (env) {
- case 'development': {
- dotenv.config({ path: '.env.development' });
- break;
- }
- case 'test': {
- dotenv.config({ path: '.env.test' });
- break;
- }
- case 'staging': {
- dotenv.config({ path: '.env.staging' });
- break;
- }
- case 'production': {
- dotenv.config({ path: '.env.production' });
- break;
- }
- default: {
- throw new Error(`Unknown environment: ${env}`);
- }
-}
+export default defineConfig(({command, mode}) => {
+  // Load env file based on `mode` in the current working directory.
+  // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
+  const env = loadEnv(mode, process.cwd(), '')
 
-export default defineConfig({
-  base: process.env.VITE_BASE_PATH,
-  esbuild: {
-    supported: {
-      'top-level-await': true //browsers can handle top-level-await features
+  return {
+    define: {
+          __APP_VERSION__: JSON.stringify(env.npm_package_version),
     },
-  },
-  optimizeDeps: {
-    esbuildOptions: {
-      target: 'esnext'
-    }
-  },
-  build: {
-    target: 'esnext'
-  },
-  plugins: [
-    TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
-    react(),
-    tailwindcss(),
-    svgr(),
-    legacy(),
-    {
-      name: 'dynamic-html',
-      transformIndexHtml(html) {
-        return html
-          .replaceAll('%TITLE%', config.metadata.title)
-          .replaceAll('%DESCRIPTION%', config.metadata.description)
-          .replaceAll('%KEYWORDS%', config.metadata.keywords);
+    base: process.env.VITE_BASE_PATH,
+    esbuild: {
+      supported: {
+        'top-level-await': true //browsers can handle top-level-await features
+      },
+    },
+    optimizeDeps: {
+      esbuildOptions: {
+        target: 'esnext'
       }
-    }
-  ],
-  resolve: {
-    alias: {
-      '@': path.resolve(__dirname, 'src'),
     },
-  },
-  server: {
-    host: config.server.host,
-    port: config.server.port,
-  },
+    build: {
+      target: 'esnext'
+    },
+    plugins: [
+      TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
+      react(),
+      tailwindcss(),
+      svgr(),
+      legacy(),
+      {
+        name: 'dynamic-html',
+        transformIndexHtml(html) {
+          return html
+            .replaceAll('%TITLE%', config.metadata.title)
+            .replaceAll('%DESCRIPTION%', config.metadata.description)
+            .replaceAll('%KEYWORDS%', config.metadata.keywords);
+        }
+      }
+    ],
+    resolve: {
+      alias: {
+        '@': path.resolve(__dirname, 'src'),
+      },
+    },
+    server: {
+      host: config.server.host,
+      port: config.server.port,
+    },
+  }
 });
