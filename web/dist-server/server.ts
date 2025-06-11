@@ -26,7 +26,7 @@ switch (env) {
 
 // Get base path from env (fallback to '/')
 const basePath = process.env.VITE_BASE_PATH ?? '/';
-const port = process.env.PORT ?? 3000;
+const port = process.env.PORT ?? 3005;
 
 const app = express();
 
