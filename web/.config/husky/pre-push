@@ -1,0 +1,16 @@
+. "$(dirname -- "$0")/_/husky.sh"
+
+// prevent exiting after a command exits with a non-zero status,
+// because we want to display a message before exiting.
+set +e
+
+git diff HEAD --quiet -- front/
+
+if [ $? -ne 0 ]; then
+    echo "Please commit the changes before a push."
+    exit 1
+fi
+
+cd front/
+# run scripts
+pnpm run build

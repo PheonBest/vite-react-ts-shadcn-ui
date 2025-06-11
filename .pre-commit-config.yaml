@@ -1,0 +1,48 @@
+repos:
+  - repo: https://github.com/terraform-docs/terraform-docs
+    rev: v0.16.0
+    hooks:
+      - id: terraform-docs-go
+        args:
+          [
+            "-c",
+            ".terraform-docs.yaml",
+            "./terraform/infrastructure-modules/s3",
+          ]
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.22
+    hooks:
+      - id: terraform-validate
+      - id: tflint
+        exclude: '^\.terragrunt-cache/'
+      - id: terragrunt-hclfmt
+
+  # Estimate cost of one environment (staging here)
+  - repo: https://github.com/antonbabenko/pre-commit-terraform
+    rev: v1.99.3
+    hooks:
+      - id: terraform_fmt
+        args:
+          - --args=-write=true
+          - --args=-recursive
+      - id: terraform_checkov
+      # Migrate from tfsec (deprecated) to trivy
+      - id: terraform_trivy
+        args:
+          - --args=--skip-dirs="**/.terragrunt-cache"
+      - id: infracost_breakdown
+        args:
+          - --args=--path=./terraform/infrastructure-live/staging
+          - --hook-config='.totalHourlyCost|tonumber < 0.1'
+          - --hook-config='.totalHourlyCost|tonumber < 1'
+          - --hook-config='.projects[].diff.totalMonthlyCost|tonumber != 10000'
+          - --hook-config='.currency = "EUR"'
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: check-merge-conflict
+      - id: check-yaml
+      - id: detect-private-key
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+exclude: '.*\.terragrunt-cache/.*'

@@ -1,0 +1,215 @@
+name: AWS multi-env deployment
+
+permissions:
+  # Allows the workflow to request an OIDC token
+  id-token: write
+
+  # Required for actions/checkout
+  contents: read
+
+on:
+  # checkov:skip=CKV_GHA_7 reason="Environment selection is safe and intentional"
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: "Select the environment to deploy to"
+        required: true
+        default: "qa"
+        type: choice
+        options:
+          - qa
+          - staging
+          - production
+  push:
+    branches:
+      - "main"
+      - "staging"
+      - "qa"
+      - "release/*"
+      - "feature/*"
+      - "bugfix/*"
+  pull_request:
+    branches:
+      - "main"
+      - "staging"
+      - "qa"
+      - "release/*"
+      - "feature/*"
+      - "bugfix/*"
+
+env:
+  aws_region: eu-west-3
+  environment: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.environment || (github.ref_name == 'main' && 'production' || github.ref_name == 'staging' && 'staging' || 'qa') }}
+  tf_version: "1.12.1"
+  tg_version: "0.81.0"
+  working_dir: "terraform/infrastructure-live"
+  tf_plugin_cache_dir: ${{ github.workspace }}/.terraform.d/plugin-cache
+
+  # verbosity setting for Terraform logs
+  TF_LOG: INFO
+
+  # S3 bucket for the Terraform state
+  BUCKET_TF_STATE: ${{ secrets.BUCKET_TF_STATE}}
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Setup AWS & Terraform Cache
+        uses: ./.github/actions/setup-aws-tf-cache
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.aws_region }}
+
+      - name: Check terragrunt HCL formatting
+        uses: gruntwork-io/terragrunt-action@v2
+        env:
+          TF_LOG: ${{ env.TF_LOG }}
+          TF_PLUGIN_CACHE_DIR: ${{ env.tf_plugin_cache_dir }}
+        with:
+          tf_version: ${{ env.tf_version }}
+          tg_version: ${{ env.tg_version }}
+          tg_dir: ${{ env.working_dir }}/${{ env.ENVIRONMENT }}
+          tg_command: "hclfmt --terragrunt-check --terragrunt-diff"
+
+      - name: Validate Terraform configuration
+        uses: gruntwork-io/terragrunt-action@v2
+        env:
+          TF_LOG: ${{ env.TF_LOG }}
+          TF_PLUGIN_CACHE_DIR: ${{ env.tf_plugin_cache_dir }}
+        with:
+          tf_version: ${{ env.tf_version }}
+          tg_version: ${{ env.tg_version }}
+          tg_dir: ${{ env.working_dir }}/${{ env.ENVIRONMENT }}
+          tg_command: "run-all validate"
+
+  build:
+    name: Lint, Test & Build
+    runs-on: ubuntu-latest
+    needs: [checks]
+    outputs:
+      app_version: ${{ steps.get_version.outputs.app_version }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        name: Install pnpm
+        with:
+          version: 10
+          run_install: false
+
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Vitest tests
+        run: pnpm test
+        env:
+          CI: true
+
+      - name: Get App version
+        id: get_version
+        run: |
+          APP_VERSION=$(node -p "require('./package.json').version")
+          echo "app_version=$APP_VERSION" >> $GITHUB_OUTPUT
+          echo "App Version: $APP_VERSION"
+
+      - name: Build project
+        run: npm run build:${{ env.environment }}
+
+      - name: Upload production-ready build files
+        id: deployment
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./dist
+
+  plan:
+    name: Validate & Plan
+    needs: [checks, build]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup AWS & Terraform Cache
+        uses: ./.github/actions/setup-aws-tf-cache
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.aws_region }}
+
+      - name: Plan
+        uses: gruntwork-io/terragrunt-action@v2
+        env:
+          TF_LOG: ${{ env.TF_LOG }}
+          TF_PLUGIN_CACHE_DIR: /github/workspace/.terraform.d/plugin-cache
+        with:
+          tf_version: ${{ env.tf_version }}
+          tg_version: ${{ env.tg_version }}
+          tg_dir: ${{ env.working_dir }}/${{ env.ENVIRONMENT }}
+          tg_command: "plan"
+
+  apply:
+    name: Apply
+    needs: [plan]
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup AWS & Terraform Cache
+        uses: ./.github/actions/setup-aws-tf-cache
+        with:
+          aws-role-arn: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: ${{ env.aws_region }}
+
+      - name: Apply
+        uses: gruntwork-io/terragrunt-action@v2
+        env:
+          TF_LOG: ${{ env.TF_LOG }}
+          TF_PLUGIN_CACHE_DIR: /github/workspace/.terraform.d/plugin-cache
+        with:
+          tf_version: ${{ env.tf_version }}
+          tg_version: ${{ env.tg_version }}
+          tg_dir: ${{ env.working_dir }}/${{ env.ENVIRONMENT }}
+          tg_command: "apply"
+
+  slack:
+    name: Slack
+    needs: apply # set "needs" only last job except this job
+    runs-on: ubuntu-latest
+    # set "always"
+    if: always()
+
+    steps:
+      # run this action to get the workflow conclusion
+      # You can get the conclusion via env (env.WORKFLOW_CONCLUSION)
+      - uses: technote-space/workflow-conclusion-action@v3
+
+      # run other action with the workflow conclusion
+      - uses: 8398a7/action-slack@v3
+        # Prevents posting useless messages for skipped or cancelled workflows.
+        if: env.WORKFLOW_CONCLUSION != 'skipped' && env.WORKFLOW_CONCLUSION != 'cancelled'
+
+        with:
+          status: custom
+          fields: workflow,job,commit,repo,ref,author,took
+          custom_payload: |
+            {
+              attachments: [{
+                color: '${{ env.WORKFLOW_CONCLUSION }}' === 'success' ? 'good' : '${{ env.WORKFLOW_CONCLUSION }}' === 'failure' ? 'danger' : 'warning',
+                text: `${process.env.AS_WORKFLOW}\n${process.env.AS_JOB} (${process.env.AS_COMMIT}) of ${process.env.AS_REPO}@${process.env.AS_REF} by ${process.env.AS_AUTHOR} ${{ env.WORKFLOW_CONCLUSION }} in ${process.env.AS_TOOK}`,
+              }]
+            }
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}

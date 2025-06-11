@@ -2,16 +2,17 @@
   "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.14.2/.schema/devbox.schema.json",
   "packages": [
     "terraform@latest",
-    "awscli@latest"
+    "awscli@latest",
+    "pre-commit@latest",
+    "tflint@latest",
+    "tfsec@latest",
+    "checkov@latest",
+    "tfupdate@latest",
+    "terragrunt@latest",
+    "hclfmt@latest",
+    "jq@latest"
   ],
   "shell": {
-    "init_hook": [
-      "echo 'Welcome to devbox!' > /dev/null"
-    ],
-    "scripts": {
-      "test": [
-        "echo \"Error: no test specified\" && exit 1"
-      ]
-    }
+    "init_hook": "DIR=~/.git-template; git config --global init.templateDir ${DIR}; pre-commit init-templatedir -t pre-commit ${DIR}"
   }
 }

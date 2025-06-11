@@ -1,0 +1,45 @@
+# dependencies
+/node_modules
+/.pnp
+.pnp.js
+
+# testing
+/coverage
+/tests_results/
+/playwright-report/
+/playwright/.cache/
+.nyc_output
+coverage-vitest
+coverage-playwright
+
+# production
+/dist
+/dist-ssr
+
+# misc
+.DS_Store
+*.pem
+
+# debug
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+
+# local env files
+**/*.env*.local
+**/*.env
+**/*.env.production
+**/*.env.staging
+**/*.env.qa
+**/*.env.development
+
+# editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
