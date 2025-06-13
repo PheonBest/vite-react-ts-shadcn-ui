@@ -24,7 +24,7 @@ function applyTheme(theme: Theme) {
 
 export const useThemeStore = create<ThemeState>()(
   persist(
-    (set, get) => ({
+    (set, _get) => ({
       theme: 'system', // Default theme, overridden by localStorage if available
       setTheme: (theme: Theme) => {
         applyTheme(theme);

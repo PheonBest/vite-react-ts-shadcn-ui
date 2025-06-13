@@ -15,18 +15,7 @@ export default [
   ...tseslint.config(
     eslintJs.configs.recommended,
     tseslint.configs.recommendedTypeChecked,
-    tseslint.configs.stylisticTypeChecked,
-    {
-      languageOptions: {
-        parserOptions: {
-          projectService: true,
-          project: ['./tsconfig.json', './tsconfig.node.json'],
-          tsconfigRootDir: new URL('.', import.meta.url),
-          ecmaVersion: 'latest',
-          sourceType: 'module'
-        }
-      }
-    }
+    tseslint.configs.stylisticTypeChecked
   ),
 
   // Plugin-based configs
@@ -51,7 +40,8 @@ export default [
       playwright
     },
     rules: {
-      ...playwright.configs['flat/recommended'].rules
+      ...playwright.configs['flat/recommended'].rules,
+      'playwright/prefer-native-locators': 'error'
     }
   },
 
@@ -61,9 +51,7 @@ export default [
       'react-hooks': reactHooks,
       'jsx-a11y': jsxA11y,
       sonarjs,
-      unicorn,
-      vitest,
-      playwright
+      unicorn
     },
     rules: {
       // Plugin recommended rules
@@ -71,8 +59,6 @@ export default [
       ...jsxA11y.configs.recommended.rules,
       ...sonarjs.configs.recommended.rules,
       ...unicorn.configs.recommended.rules,
-      ...playwright.configs['flat/recommended'].rules,
-      ...vitest.configs.recommended.rules,
 
       // Base
       quotes: ['error', 'single'],
@@ -96,11 +82,11 @@ export default [
           checksVoidReturn: { attributes: false }
         }
       ],
-      'playwright/prefer-native-locators': 'error',
       '@typescript-eslint/no-unsafe-return': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',
       '@typescript-eslint/no-unsafe-argument': 'off',
       'unicorn/switch-case-braces': 'off',
+      'unicorn/no-abusive-eslint-disable': 'off',
       'unicorn/prevent-abbreviations': [
         'off', // 'off' is ignored
         {
@@ -123,9 +109,31 @@ export default [
         document: 'readonly',
         vitest: true
       }
-    },
-    ignores: ['**/*.html', '**/routeTree.gen.ts']
+    }
   },
 
-  prettier
+  prettier,
+
+  {
+    languageOptions: {
+      parserOptions: {
+        projectService: true,
+        project: ['./tsconfig.json', './tsconfig.node.json'],
+        tsconfigRootDir: new URL('.', import.meta.url),
+        ecmaVersion: 'latest',
+        sourceType: 'module'
+      }
+    }
+  },
+  {
+    ignores: [
+      '**/*.html',
+      '**/routeTree.gen.ts',
+      '**/dist/*',
+      '**/node_modules/*',
+      'dist-server/server.js',
+      '**/coverage-vitest/*',
+      '**/coverage-playwright/*'
+    ]
+  }
 ];

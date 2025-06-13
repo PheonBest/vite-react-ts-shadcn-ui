@@ -67,8 +67,14 @@
     font-family: 'Roboto', sans-serif;
   }
 
-  #root {
+  #content {
     @apply flex h-full w-full flex-col;
+
+    --navbar-height: 80px;
+    --footer-height: 50px;
+
+    margin-top: var(--navbar-height);
+    min-height: calc(100vh - var(--footer-height) - var(--navbar-height));
   }
 }
 

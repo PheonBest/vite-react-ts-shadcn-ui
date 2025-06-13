@@ -5,14 +5,15 @@ import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { DefaultCatchBoundary } from '@/core/components/default-catch-bounrdary';
 import { NotFound } from '@/core/components/not-found';
 // Import the generated route tree
-import { routeTree } from '@/routeTree.gen';
 import { useThemeStore } from '@/stores/theme';
+
+import { routeTree } from './routeTree.gen';
 
 // Create a new router instance
 const router = createRouter({
   routeTree,
+  trailingSlash: 'always',
   defaultPreload: 'intent',
-  scrollRestoration: true,
   basepath: import.meta.env.VITE_BASE_PATH,
   defaultErrorComponent: DefaultCatchBoundary,
   defaultNotFoundComponent: () => <NotFound />
@@ -28,9 +29,11 @@ function App() {
   const setTheme = useThemeStore((state) => state.setTheme);
 
   useEffect(() => {
+    // Initialize page's theme based on user's preferences
     const theme = useThemeStore.getState().theme;
     setTheme(theme);
-  }, []);
+  }, [setTheme]);
+
   return (
     <StrictMode>
       <RouterProvider router={router} />

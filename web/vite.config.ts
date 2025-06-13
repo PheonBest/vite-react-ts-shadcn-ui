@@ -20,48 +20,47 @@ export default defineConfig(({command, mode}) => {
   // Set the third parameter to '' to load all env regardless of the `VITE_` prefix.
   const env = loadEnv(mode, process.cwd(), '')
 
-  return {
-    define: {
-          __APP_VERSION__: JSON.stringify(env.npm_package_version),
+export default defineConfig({
+  define: {
+    __APP_VERSION__: JSON.stringify(env.npm_package_version),
+  },
+  base: process.env.VITE_BASE_PATH,
+  esbuild: {
+    supported: {
+      'top-level-await': true //browsers can handle top-level-await features
     },
-    base: process.env.VITE_BASE_PATH,
-    esbuild: {
-      supported: {
-        'top-level-await': true //browsers can handle top-level-await features
-      },
-    },
-    optimizeDeps: {
-      esbuildOptions: {
-        target: 'esnext'
-      }
-    },
-    build: {
+  },
+  optimizeDeps: {
+    esbuildOptions: {
       target: 'esnext'
-    },
-    plugins: [
-      TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
-      react(),
-      tailwindcss(),
-      svgr(),
-      legacy(),
-      {
-        name: 'dynamic-html',
-        transformIndexHtml(html) {
-          return html
-            .replaceAll('%TITLE%', config.metadata.title)
-            .replaceAll('%DESCRIPTION%', config.metadata.description)
-            .replaceAll('%KEYWORDS%', config.metadata.keywords);
-        }
+    }
+  },
+  build: {
+    target: 'esnext'
+  },
+  plugins: [
+    TanStackRouterVite({ target: 'react', autoCodeSplitting: true }),
+    react(),
+    tailwindcss(),
+    svgr(),
+    legacy(),
+    {
+      name: 'dynamic-html',
+      transformIndexHtml(html) {
+        return html
+          .replaceAll('%TITLE%', config.metadata.title)
+          .replaceAll('%DESCRIPTION%', config.metadata.description)
+          .replaceAll('%KEYWORDS%', config.metadata.keywords);
       }
-    ],
-    resolve: {
-      alias: {
-        '@': path.resolve(__dirname, 'src'),
-      },
+    }
+  ],
+  resolve: {
+    alias: {
+      '@': path.resolve(__dirname, 'src'),
     },
-    server: {
-      host: config.server.host,
-      port: config.server.port,
-    },
-  }
+  },
+  server: {
+    host: config.server.host,
+    port: config.server.port,
+  },
 });

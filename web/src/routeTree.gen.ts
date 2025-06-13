@@ -11,12 +11,16 @@
 // Import Routes
 
 import { Route as rootRoute } from './routes/__root'
-import { Route as AboutImport } from './routes/about'
+import { Route as AboutRouteImport } from './routes/about/route'
 import { Route as IndexImport } from './routes/index'
+import { Route as AboutIndexImport } from './routes/about/index'
+import { Route as AboutVisionImport } from './routes/about/vision'
+import { Route as AboutTeamImport } from './routes/about/team'
+import { Route as AboutProjectsImport } from './routes/about/projects'
 
 // Create/Update Routes
 
-const AboutRoute = AboutImport.update({
+const AboutRouteRoute = AboutRouteImport.update({
   id: '/about',
   path: '/about',
   getParentRoute: () => rootRoute,
@@ -26,6 +30,30 @@ const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRoute,
+} as any)
+
+const AboutIndexRoute = AboutIndexImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => AboutRouteRoute,
+} as any)
+
+const AboutVisionRoute = AboutVisionImport.update({
+  id: '/vision',
+  path: '/vision',
+  getParentRoute: () => AboutRouteRoute,
+} as any)
+
+const AboutTeamRoute = AboutTeamImport.update({
+  id: '/team',
+  path: '/team',
+  getParentRoute: () => AboutRouteRoute,
+} as any)
+
+const AboutProjectsRoute = AboutProjectsImport.update({
+  id: '/projects',
+  path: '/projects',
+  getParentRoute: () => AboutRouteRoute,
 } as any)
 
 // Populate the FileRoutesByPath interface
@@ -43,47 +71,117 @@ declare module '@tanstack/react-router' {
       id: '/about'
       path: '/about'
       fullPath: '/about'
-      preLoaderRoute: typeof AboutImport
+      preLoaderRoute: typeof AboutRouteImport
       parentRoute: typeof rootRoute
+    }
+    '/about/projects': {
+      id: '/about/projects'
+      path: '/projects'
+      fullPath: '/about/projects'
+      preLoaderRoute: typeof AboutProjectsImport
+      parentRoute: typeof AboutRouteImport
+    }
+    '/about/team': {
+      id: '/about/team'
+      path: '/team'
+      fullPath: '/about/team'
+      preLoaderRoute: typeof AboutTeamImport
+      parentRoute: typeof AboutRouteImport
+    }
+    '/about/vision': {
+      id: '/about/vision'
+      path: '/vision'
+      fullPath: '/about/vision'
+      preLoaderRoute: typeof AboutVisionImport
+      parentRoute: typeof AboutRouteImport
+    }
+    '/about/': {
+      id: '/about/'
+      path: '/'
+      fullPath: '/about/'
+      preLoaderRoute: typeof AboutIndexImport
+      parentRoute: typeof AboutRouteImport
     }
   }
 }
 
 // Create and export the route tree
 
+interface AboutRouteRouteChildren {
+  AboutProjectsRoute: typeof AboutProjectsRoute
+  AboutTeamRoute: typeof AboutTeamRoute
+  AboutVisionRoute: typeof AboutVisionRoute
+  AboutIndexRoute: typeof AboutIndexRoute
+}
+
+const AboutRouteRouteChildren: AboutRouteRouteChildren = {
+  AboutProjectsRoute: AboutProjectsRoute,
+  AboutTeamRoute: AboutTeamRoute,
+  AboutVisionRoute: AboutVisionRoute,
+  AboutIndexRoute: AboutIndexRoute,
+}
+
+const AboutRouteRouteWithChildren = AboutRouteRoute._addFileChildren(
+  AboutRouteRouteChildren,
+)
+
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AboutRouteRouteWithChildren
+  '/about/projects': typeof AboutProjectsRoute
+  '/about/team': typeof AboutTeamRoute
+  '/about/vision': typeof AboutVisionRoute
+  '/about/': typeof AboutIndexRoute
 }
 
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/about/projects': typeof AboutProjectsRoute
+  '/about/team': typeof AboutTeamRoute
+  '/about/vision': typeof AboutVisionRoute
+  '/about': typeof AboutIndexRoute
 }
 
 export interface FileRoutesById {
   __root__: typeof rootRoute
   '/': typeof IndexRoute
-  '/about': typeof AboutRoute
+  '/about': typeof AboutRouteRouteWithChildren
+  '/about/projects': typeof AboutProjectsRoute
+  '/about/team': typeof AboutTeamRoute
+  '/about/vision': typeof AboutVisionRoute
+  '/about/': typeof AboutIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/about'
+  fullPaths:
+    | '/'
+    | '/about'
+    | '/about/projects'
+    | '/about/team'
+    | '/about/vision'
+    | '/about/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/about'
-  id: '__root__' | '/' | '/about'
+  to: '/' | '/about/projects' | '/about/team' | '/about/vision' | '/about'
+  id:
+    | '__root__'
+    | '/'
+    | '/about'
+    | '/about/projects'
+    | '/about/team'
+    | '/about/vision'
+    | '/about/'
   fileRoutesById: FileRoutesById
 }
 
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AboutRoute: typeof AboutRoute
+  AboutRouteRoute: typeof AboutRouteRouteWithChildren
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AboutRoute: AboutRoute,
+  AboutRouteRoute: AboutRouteRouteWithChildren,
 }
 
 export const routeTree = rootRoute
@@ -104,7 +202,29 @@ export const routeTree = rootRoute
       "filePath": "index.tsx"
     },
     "/about": {
-      "filePath": "about.tsx"
+      "filePath": "about/route.tsx",
+      "children": [
+        "/about/projects",
+        "/about/team",
+        "/about/vision",
+        "/about/"
+      ]
+    },
+    "/about/projects": {
+      "filePath": "about/projects.tsx",
+      "parent": "/about"
+    },
+    "/about/team": {
+      "filePath": "about/team.tsx",
+      "parent": "/about"
+    },
+    "/about/vision": {
+      "filePath": "about/vision.tsx",
+      "parent": "/about"
+    },
+    "/about/": {
+      "filePath": "about/index.tsx",
+      "parent": "/about"
     }
   }
 }

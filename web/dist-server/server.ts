@@ -1,8 +1,8 @@
-import path from 'path';
-import { fileURLToPath } from 'url';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
 import dotenv from 'dotenv';
-import express, { Request, Response } from 'express';
+import express, { type Request, type Response } from 'express';
 
 // Load environment variables based on NODE_ENV
 const env = process.env.NODE_ENV ?? 'development';
@@ -26,7 +26,7 @@ switch (env) {
 
 // Get base path from env (fallback to '/')
 const basePath = process.env.VITE_BASE_PATH ?? '/';
-const port = process.env.PORT ?? 3005;
+const port = process.env.PORT ?? 3000;
 
 const app = express();
 

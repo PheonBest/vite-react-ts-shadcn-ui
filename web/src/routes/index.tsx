@@ -9,10 +9,13 @@ import { Card, CardContent } from '@/core/components/ui/card';
 import { Skeleton } from '@/core/components/ui/skeleton';
 
 export const Route = createFileRoute('/')({
-  component: Index
+  component: IndexComponent,
+  loader: () => ({
+    crumb: 'Home'
+  })
 });
 
-export default function Index() {
+export default function IndexComponent() {
   // In dev environment, dynamic values are fetched from mocked APIs
   // In prod environment, default values are used
   const [nameLoading, setNameLoading] = useState(true);
@@ -69,8 +72,8 @@ export default function Index() {
   }, []);
 
   return (
-    <div className='page-content flex flex-col gap-6 pt-12'>
-      <div className='mt-12 mb-24 flex flex-col'>
+    <div className='flex flex-col gap-6'>
+      <div className='flex flex-col'>
         <h1 className='raleway3'>
           Welcome to <span className='text-teal-600'>launchplate-react</span>
         </h1>

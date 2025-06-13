@@ -3,18 +3,22 @@
 import { expect, test } from 'playwright-test-coverage';
 
 test('receives a mocked response to a REST API request', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.goto('/');
 
   const greetingText = page.getByTestId('greeting');
+  await greetingText.waitFor();
+
   await greetingText.isVisible();
 
   await expect(greetingText).toHaveText('Hello, John Maverick !');
 });
 
 test('receives a mocked response to a GraphQL API request', async ({ page }) => {
-  await page.goto('/', { waitUntil: 'networkidle' });
+  await page.goto('/');
 
   const moviesList = page.getByTestId('graphql-response');
+  await moviesList.waitFor();
+
   await moviesList.isVisible();
   const movieItems = await moviesList.locator('li').getByLabel('Movie title').allTextContents();
   expect(movieItems).toEqual([

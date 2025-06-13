@@ -1,3 +1,10 @@
+**/*.html
+**/routeTree.gen.ts
+/dist
+/dist-server/server.js
+/coverage-vitest
+/coverage-playwright'
+
 # dependencies
 /node_modules
 /.pnp

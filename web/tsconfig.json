@@ -31,8 +31,18 @@
     "playwright.config.ts",
     "vite.config.ts",
     "vitest.config.ts",
-    ".betterer.ts"
+    ".betterer.ts",
+    "dist-server/server.ts",
+    "tailwind.config.ts",
+    "commitlint.config.ts",
+    "public/mockServiceWorker.js"
   ],
-  "exclude": ["node_modules"],
+  "exclude": [
+    "node_modules",
+    "dist",
+    "dist-server/server.js",
+    "coverage-vitest",
+    "coverage-playwright"
+  ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

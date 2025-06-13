@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 interface AppConfig {
   name: string;
   foundingYear: number;
-  appVersion: string;
+  version: string;
   mode: string;
   apiUri?: string;
   apiVersion?: string;
@@ -11,7 +11,7 @@ interface AppConfig {
 const baseConfig: AppConfig = {
   name: 'MyTemplate',
   foundingYear: 2023,
-  appVersion: import.meta.env.VITE_APP_VERSION,
+  version: import.meta.env.VITE_APP_VERSION,
   mode: import.meta.env.MODE,
   apiUri: import.meta.env.VITE_API_URI
 };
