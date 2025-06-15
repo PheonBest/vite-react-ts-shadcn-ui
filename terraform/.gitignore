@@ -4,6 +4,7 @@
 terragrunt.iml
 vendor
 .terraform
+**/.terraform
 .infracost
 .vscode
 *.tfstate
