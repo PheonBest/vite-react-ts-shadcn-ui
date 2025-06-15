@@ -1,0 +1,4 @@
+environment: "qa"
+domain_name: "staging-launchplate-react.gloweet.com"
+base_domain: "gloweet.com"
+zone_id: "abacf89ddca7c29301822f6dfc6ff8c9"

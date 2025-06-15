@@ -36,6 +36,8 @@
     "build:qa": "vite build --mode qa",
     "build:staging": "vite build --mode staging",
     "build": "vite build",
+    "publish:qa": "aws s3 cp dist s3://qa-launchplate-react - recursive",
+    "publish:staging": "aws s3 cp dist s3://staging-launchplate-react - recursive",
     "commit": "git-cz",
     "betterer": "betterer",
     "betterer:watch": "betterer --watch",

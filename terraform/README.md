@@ -1,6 +1,6 @@
 # Deploy a static website to S3 w/ Cloudfront
 
-![Architecture](./architecture.png)
+![Architecture](./docs/architecture.png)
 
 ## How to develop
 ```
@@ -9,8 +9,23 @@ devbox shell
 
 ```
 
-## 2. Configure Github Action access to AWS
-![Bootstrap backend](bootstrap_backend)
+## Create a Route53 Zone manually
+
+> I prefer to create it manually in the AWS console. Mainly because I often use it in many modules
+
+If you already have a Route53 zone, paste the zone ID in each terragrunt.hcl file.
+
+Else, please follow these steps to create a Route53 zone manually:
+
+1. Navigate to the AWS Rxoute53 console.
+2. Click on "Hosted Zones" in the left navigation pane.
+3. Click on "Create Hosted Zone".
+4. Enter a name for your zone (e.g., example.com).
+5. Choose the region where you want to create the zone.
+6. Click on "Create".
+
+## Configure Github Action access to AWS
+![Bootstrap backend](./docs/bootstrap_backend.png)
 ```sh
 terragrunt run --config root.hcl --backend-bootstrap -- init
 ```
@@ -25,8 +40,8 @@ For AWS to trust GitHub’s OIDC tokens, an OIDC provider must be created in IAM
 4. For the audience, use: s[ts.amazonaws.com‍](ts.amazonaws.com‍)
 5. Click Add Provider to save the configuration.
 
-![](create_web_identity.png)
-![](configure_web_identity.png)
+![Create web identity](./docs/create_web_identity.png)
+![Configure web identity](./docs/configure_web_identity.png)
 
 ### B. Configure an IAM Role for Github action
 
@@ -86,7 +101,7 @@ Terraform needs to manage:
 - DynamoDB permissions for state locking.
 - CloudFront distribution
 
-Attach the following permissions to the role: [iam_policy.tf_s3_cloudfront](iam_policy.tf_s3_cloudfront)
+Attach the following permissions to the role: [IAM Policy](./docs/iam_policy)
 
 Once done, click Create Role and copy the Role ARN for use in GitHub Actions.
 
